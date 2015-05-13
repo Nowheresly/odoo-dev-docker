@@ -1,0 +1,61 @@
+FROM ubuntu:14.04
+MAINTAINER Sylvere Richard
+
+# Install.
+RUN \
+  sed -i 's/# \(.*multiverse$\)/\1/g' /etc/apt/sources.list && \
+  apt-get update && \
+  apt-get -y upgrade && \
+  apt-get install -y build-essential && \
+  apt-get install -y software-properties-common && \
+  apt-get install -y byobu curl git htop man unzip vim wget postgresql && \
+  apt-get install -y ca-certificates nodejs npm python-support && \
+  apt-get install -y python-pyinotify nginx libpq-dev && \
+  apt-get install -y python python-dev python-distribute python-pip && \
+  apt-get install -y python-dateutil python-feedparser python-gdata && \
+  apt-get install -y python-ldap python-libxslt1 python-lxml python-mako && \
+  apt-get install -y python-openid python-psycopg2 python-pybabel python-pychart && \
+  apt-get install -y python-pydot python-pyparsing python-reportlab && \
+  apt-get install -y python-simplejson python-tz python-vatnumber && \
+  apt-get install -y python-vobject python-webdav python-werkzeug python-xlwt && \
+  apt-get install -y python-yaml python-zsi python-docutils python-psutil  && \
+  apt-get install -y python-unittest2 python-mock python-jinja2 && \
+  apt-get install -y poppler-utils python-pdftools antiword && \
+  apt-get install -y python-decorator python-imaging python-passlib && \
+  apt-get install -y python-pypdf python-gevent && \
+  npm install -g less less-plugin-clean-css && \
+  ln -s /usr/bin/nodejs /usr/bin/node && \
+  rm -rf /var/lib/apt/lists/*
+
+# Add files.
+ADD root/.bashrc /root/.bashrc
+
+RUN echo "root:root" | chpasswd
+
+RUN useradd -ms /bin/bash odoo
+RUN adduser odoo sudo
+RUN chown -R odoo:odoo /home/odoo
+RUN echo "odoo:odoo" | chpasswd
+
+# Set default user when running the container
+USER odoo
+
+# Set environment variables.
+ENV HOME /home/odoo
+
+RUN \
+  mkdir /home/odoo/odoo-dev
+
+
+# Define working directory.
+WORKDIR /home/odoo
+
+
+# Mount /var/lib/odoo to allow restoring filestore and /mnt/extra-addons for users addons
+VOLUME ["/var/lib/odoo", "/mnt/extra-addons", "/root/odoo-dev"]
+
+# Expose Odoo services
+EXPOSE 8069 8071
+
+
+CMD ["/bin/sh", "-c", "while true; do echo hello world; sleep 1; done"]
