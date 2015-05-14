@@ -6,6 +6,7 @@ RUN \
   sed -i 's/# \(.*multiverse$\)/\1/g' /etc/apt/sources.list && \
   apt-get update && \
   apt-get -y upgrade && \
+  apt-get install -y xfonts-base xfonts-75dpi && \
   apt-get install -y build-essential && \
   apt-get install -y software-properties-common && \
   apt-get install -y byobu curl git htop man unzip vim wget postgresql && \
@@ -27,35 +28,60 @@ RUN \
   ln -s /usr/bin/nodejs /usr/bin/node && \
   rm -rf /var/lib/apt/lists/*
 
-# Add files.
-ADD root/.bashrc /root/.bashrc
+
+RUN \
+  wget http://netcologne.dl.sourceforge.net/project/wkhtmltopdf/0.12.2.1/wkhtmltox-0.12.2.1_linux-trusty-amd64.deb && \
+  dpkg -i wkhtmltox-0.12.2.1_linux-trusty-amd64.deb && \
+  cp /usr/local/bin/wkhtmltopdf /usr/bin && \
+  cp /usr/local/bin/wkhtmltoimage /usr/bin
 
 RUN echo "root:root" | chpasswd
 
 RUN useradd -ms /bin/bash odoo
 RUN adduser odoo sudo
+RUN mkdir /home/odoo/odoo-dev
 RUN chown -R odoo:odoo /home/odoo
 RUN echo "odoo:odoo" | chpasswd
+
+# Set environment variables.
+ENV HOME /home/odoo
+ENV PGDATA /var/lib/postgresql
+ENV PG_VERSION 9.4
+
+# Add files.
+ADD root/.bashrc /root/.bashrc
+ADD root/.bashrc /home/odoo/.bashrc
+
+# Run the rest of the commands as the ``postgres`` user created by the ``postgres-9.3`` package when it was ``apt-get installed``
+USER postgres
+
+# Adjust PostgreSQL configuration so that remote connections to the
+# database are possible.
+RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/9.3/main/pg_hba.conf
+# And add ``listen_addresses`` to ``/etc/postgresql/9.3/main/postgresql.conf``
+RUN echo "listen_addresses='*'" >> /etc/postgresql/9.3/main/postgresql.conf
+RUN    /etc/init.d/postgresql start &&\
+    psql --command "CREATE USER odoo WITH SUPERUSER PASSWORD 'odoo';"
+
+
+
+# Mount /mnt/extra-addons for users addons
+VOLUME ["/mnt/extra-addons", "/home/odoo/odoo-dev", "/var/lib/postgresql"]
+
+# Expose Odoo services
+EXPOSE 8069 8071 5432
 
 # Set default user when running the container
 USER odoo
 
-# Set environment variables.
-ENV HOME /home/odoo
-
-RUN \
-  mkdir /home/odoo/odoo-dev
-
-
 # Define working directory.
 WORKDIR /home/odoo
 
+CMD ["/bin/sh", "-c", "while true; do echo still alive; sleep 1; done"]
 
-# Mount /var/lib/odoo to allow restoring filestore and /mnt/extra-addons for users addons
-VOLUME ["/var/lib/odoo", "/mnt/extra-addons", "/root/odoo-dev"]
-
-# Expose Odoo services
-EXPOSE 8069 8071
-
-
-CMD ["/bin/sh", "-c", "while true; do echo hello world; sleep 1; done"]
+# sudo mkdir -p /var/lib/postgresql/9.3/main
+# sudo chown  postgres /var/lib/postgresql/9.3/main
+# sudo chmod 700 /var/lib/postgresql/9.3/main
+# sudo su postgres -c "/usr/lib/postgresql/9.3/bin/initdb -D /var/lib/postgresql/9.3/main --encoding UTF8"
+# sudo /etc/init.d/postgresql start
+# /usr/lib/postgresql/9.3/bin/postgres -D /var/lib/postgresql/9.3/main  -c config_file=/etc/postgresql/9.3/main/postgresql.conf

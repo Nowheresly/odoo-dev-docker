@@ -4,22 +4,21 @@
 `docker build -f DockerfileData -t odoodata .`
 
 ## run the data container
-docker run --name odoodata <id>
-
-## run the postgresql container
-docker run -p 5432:5432 --volumes-from odoodata -d -e \
-POSTGRES_USER=odoo -e POSTGRES_PASSWORD=odoo --name dbodoodata \
--v /c/Users/srichard/docker/odoorun/postgresql/logs:/var/log/postgresql \
-postgres
+`docker run --name odoodata <id>`
 
 ## build the odoo dev container
-docker build -f DockerfileOdoo -t odoodev .
+`docker build -f DockerfileOdoo -t odoodev .`
 
 ## run the odoo dev container
-docker run -p 8069:8069 --name odoodev --link dbodoodata:db \
--v /c/Users/srichard/odoo-dev:/root/odoo-dev
+`docker run -p 8069:8069 --name odoodev \`
+`-p 5432:5432 \`
+`--volumes-from odoodata \`
+``-v /c/Users/srichard/postgresql:/var/lib/postgresql \`
+`-v /c/Users/srichard/odoo-dev:/home/odoo/odoo-dev`
 
 ## start a bash and start the server
-docker exec -i -t odoodev bash
-cd odoo-dev
-./odoo.py
+`docker exec -i -t odoodev bash`
+`cd odoo-dev`
+`python odoo.py setup_deps`
+`python odoo.py setup_pg`
+`./odoo.py`
