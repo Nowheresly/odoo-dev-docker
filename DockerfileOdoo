@@ -78,10 +78,3 @@ USER odoo
 WORKDIR /home/odoo
 
 CMD ["/bin/sh", "-c", "while true; do echo still alive; sleep 1; done"]
-
-# sudo mkdir -p /var/lib/postgresql/9.3/main
-# sudo chown  postgres /var/lib/postgresql/9.3/main
-# sudo chmod 700 /var/lib/postgresql/9.3/main
-# sudo su postgres -c "/usr/lib/postgresql/9.3/bin/initdb -D /var/lib/postgresql/9.3/main --encoding UTF8"
-# sudo /etc/init.d/postgresql start
-# /usr/lib/postgresql/9.3/bin/postgres -D /var/lib/postgresql/9.3/main  -c config_file=/etc/postgresql/9.3/main/postgresql.conf
