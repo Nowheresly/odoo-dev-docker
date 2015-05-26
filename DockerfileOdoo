@@ -77,4 +77,8 @@ USER odoo
 # Define working directory.
 WORKDIR /home/odoo
 
+# useful for odoo.py setup_pg
+ENV USER odoo
+
+
 CMD ["/bin/sh", "-c", "while true; do echo still alive; sleep 1; done"]

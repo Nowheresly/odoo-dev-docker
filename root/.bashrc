@@ -39,8 +39,11 @@ else
 fi
 export LS_COLORS="di=34:ln=35:so=32:pi=33:ex=1;40:bd=34;40:cd=34;40:su=0;40:sg=0;40:tw=0;40:ow=0;40:"
 
-# Git
-source $HOME/.scripts/git-completion.sh
-
-# Z
-source $HOME/.scripts/z.sh
+echo 'initialize db'
+echo 'sudo mkdir -p /var/lib/postgresql/9.3/main && sudo chown postgres /var/lib/postgresql/9.3/main && sudo chmod 700 /var/lib/postgresql/9.3/main && sudo su postgres -c "/usr/lib/postgresql/9.3/bin/initdb -D /var/lib/postgresql/9.3/main --encoding UTF8"'
+echo ' '
+echo 'start db'
+echo 'service postgresql start'
+echo ' '
+echo 'initialize odoo server'
+echo 'python ./odoo-dev/odoo.py setup_deps && python ./odoo-dev/odoo.py setup_pg'
